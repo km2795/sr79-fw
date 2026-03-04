@@ -1,0 +1,12 @@
+# Binaries
+ips
+sr79-fw
+*.exe
+
+# Build Artifacts
+*.o
+*.a
+
+# System Files
+.DS_Store
+Thumbs.db
