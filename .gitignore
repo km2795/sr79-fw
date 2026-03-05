@@ -2,6 +2,7 @@
 ips
 sr79-fw
 *.exe
+main
 
 # Build Artifacts
 *.o
@@ -9,4 +10,4 @@ sr79-fw
 
 # System Files
 .DS_Store
-Thumbs.dbmain
+Thumbs.db
