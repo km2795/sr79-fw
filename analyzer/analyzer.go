@@ -5,6 +5,14 @@ import (
 	"github.com/google/gopacket/layers"
 )
 
+// Verdict is the action to perform on the packet.
+type Verdict int
+
+const (
+	Allow Verdict = iota // 0
+	Drop                 // 1
+)
+
 // convertPacket converts the gopacket.Packet implementation
 // of a network packet and converts that into our own 'Packet'
 // implementation.
@@ -70,4 +78,25 @@ func convertPacket(gp gopacket.Packet) *Packet {
 	// ---- Assertion and Population ends here. ----
 
 	return packet
+}
+
+func Analyze(c Classifier, gp gopacket.Packet) Verdict {
+	// Convert the gopacket to our Packet implementation.
+	packet := convertPacket(gp)
+
+	// If convertor could not convert the packet, for now, we
+	// may simply allow the packet to pass through, as the
+	// our convertor may not be sophisticated enough at this point.
+	if packet == nil {
+		return Allow
+	}
+
+	// If the classifier returns true, that means our packet
+	// is malformed, hence drop it.
+	if c.Classify(packet) {
+		return Drop
+	}
+
+	// For all other cases, allow the packet through.
+	return Allow
 }
