@@ -1,8 +1,11 @@
 package analyzer
 
 import (
+	"fmt"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+	"sr79-fw/logger"
+	"time"
 )
 
 // Verdict is the action to perform on the packet.
@@ -87,16 +90,43 @@ func Analyze(c Classifier, gp gopacket.Packet) Verdict {
 	// If convertor could not convert the packet, for now, we
 	// may simply allow the packet to pass through, as the
 	// our convertor may not be sophisticated enough at this point.
+	// NOT Logging Allowed packets here due to probable lack of
+	// fields to populate while logging.
 	if packet == nil {
 		return Allow
+	}
+
+	// Create Logger Entry for pre-determined fields.
+	var logEntry logger.LogEntry = logger.LogEntry{
+		Timestamp:   time.Now(),
+		Classifier:  fmt.Sprintf("%T", c),
+		Source:      fmt.Sprintf("%s:%d", packet.SrcIp, packet.SrcPort),
+		Destination: fmt.Sprintf("%s:%d", packet.DestIp, packet.DestPort),
+		TCPFlags:    formatFlags(packet.Flags),
+		PacketRate:  packet.PacketRate,
 	}
 
 	// If the classifier returns true, that means our packet
 	// is malformed, hence drop it.
 	if c.Classify(packet) {
+		// Update the remaining fields.
+		logEntry.Level = logger.ALERT
+		logEntry.Verdict = "DROP"
+		logger.Log(logEntry) // Push the log.
+
 		return Drop
 	}
 
 	// For all other cases, allow the packet through.
+	logEntry.Level = logger.INFO
+	logEntry.Verdict = "ALLOW"
+	logger.Log(logEntry)
+
 	return Allow
+}
+
+// formatFlags helps in formatting a string for feeding into the logger for
+// flags specifically.
+func formatFlags(flags TCPFlags) string {
+	return fmt.Sprintf("SYN=%t ACK=%t FIN=%t RST=%t PSH=%t URG=%t", flags.SYN, flags.ACK, flags.FIN, flags.RST, flags.PSH, flags.URG)
 }

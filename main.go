@@ -41,11 +41,9 @@ func main() {
 
 		// Drop
 		if verdict == analyzer.Drop {
-			fmt.Println("Packet is Invalid, DROPPING it!")
 
 			// Allow.
 		} else {
-			fmt.Println("Packet is Valid, PASSING it!")
 		}
 	}
 
