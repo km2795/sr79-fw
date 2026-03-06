@@ -51,9 +51,11 @@ func main() {
 		os.Exit(0)
 	}()
 
+	tracker := analyzer.NewConnectionTracker(5.0)
+
 	// Loop over the gopacket.Packet channel and invoke Analyze() on the packet.
 	for packet := range packetChannel {
-		verdict := analyzer.Analyze(&c, packet)
+		verdict := analyzer.Analyze(&c, tracker, packet)
 
 		// Drop
 		if verdict == analyzer.Drop {

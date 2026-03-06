@@ -83,7 +83,7 @@ func convertPacket(gp gopacket.Packet) *Packet {
 	return packet
 }
 
-func Analyze(c Classifier, gp gopacket.Packet) Verdict {
+func Analyze(c Classifier, tracker *ConnectionTracker, gp gopacket.Packet) Verdict {
 	// Convert the gopacket to our Packet implementation.
 	packet := convertPacket(gp)
 
@@ -108,7 +108,9 @@ func Analyze(c Classifier, gp gopacket.Packet) Verdict {
 
 	// If the classifier returns true, that means our packet
 	// is malformed, hence drop it.
-	if c.Classify(packet) {
+	verdict := c.Classify(packet)
+
+	if tracker.Track(packet, verdict) || verdict {
 		// Update the remaining fields.
 		logEntry.Level = logger.ALERT
 		logEntry.Verdict = "DROP"
