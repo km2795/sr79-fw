@@ -3,7 +3,6 @@ package sniffer
 import (
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
@@ -27,7 +26,7 @@ func Start(device string) (*PacketSource, error) {
 		return nil, fmt.Errorf("invalid device configuration")
 	}
 
-	handle, err := pcap.OpenLive(device, 1600, true, 30*time.Second)
+	handle, err := pcap.OpenLive(device, 1600, true, pcap.BlockForever)
 	if err != nil {
 		log.Printf("Error Opening Interface: %v\n", err)
 		return nil, err
