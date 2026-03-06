@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"sr79-fw/analyzer"
+	"sr79-fw/responder"
 	"sr79-fw/sniffer"
 )
 
@@ -41,9 +43,9 @@ func main() {
 
 		// Drop
 		if verdict == analyzer.Drop {
-
-			// Allow.
-		} else {
+			if err := responder.SendReset(packetSource.Handle(), packet); err != nil {
+				log.Printf("RST injection failed: %v", err)
+			}
 		}
 	}
 
