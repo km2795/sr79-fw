@@ -68,12 +68,18 @@ func SendReset(handle *pcap.Handle, gp gopacket.Packet) error {
 
 	// ---- Serialize the Packet for Transmission ---- //
 	buffer := gopacket.NewSerializeBuffer()
+	// INFO: On Swapping the content above, the receiver would
+	// find the checksum invalid and silently discard the packet.
+	// With these options set, during serialization, gopacket
+	// would recalculate the checksum.
 	options := gopacket.SerializeOptions{
-		ComputeChecksums: true, // For correct checksums
+		ComputeChecksums: true,
 		FixLengths:       true,
 	}
 
-	// Direct the TCP layer to use IP layer for checksum calculations.
+	// To provide TCP the psuedo-header from the IPv4 Layer.
+	// Otherwise the checksum would be invalid and the TCP
+	// RST packet would be silently rejected by the receiver.
 	tcp.SetNetworkLayerForChecksum(ipv4)
 
 	// Serialize all the layers.
