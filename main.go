@@ -3,9 +3,12 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
 	"sr79-fw/analyzer"
 	"sr79-fw/responder"
 	"sr79-fw/sniffer"
+	"syscall"
 )
 
 func main() {
@@ -36,6 +39,17 @@ func main() {
 
 	// ---- PACKET RECEIVING CHANNEL LOOP ---- //
 	packetChannel := sniffer.ProcessPackets(packetSource)
+
+	// ---- GRACEFUL SHUTDOWN MECHANISM ---- //
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		<-sigChan
+		fmt.Println("\nShutting down sr79-fw")
+		packetSource.Close()
+		os.Exit(0)
+	}()
 
 	// Loop over the gopacket.Packet channel and invoke Analyze() on the packet.
 	for packet := range packetChannel {
