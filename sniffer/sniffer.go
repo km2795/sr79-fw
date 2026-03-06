@@ -62,6 +62,12 @@ func ProcessPackets(ps *PacketSource) chan gopacket.Packet {
 	return packetChannel
 }
 
+// Handle returns the underlying pcap.Handle for use by other packages
+// (e.g. the responder).
+func (ps *PacketSource) Handle() *pcap.Handle {
+	return ps.handle
+}
+
 // Close finally cleans the pcap handle to the device when the analyzer
 // sends the shutdown signal.
 func (ps *PacketSource) Close() {
