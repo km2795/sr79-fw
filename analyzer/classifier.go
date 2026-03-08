@@ -30,13 +30,27 @@ type Classifier interface {
 type RuleClassifier struct {
 }
 
-type ANNClassifier struct {
-}
-
 func (r *RuleClassifier) Classify(p *Packet) bool {
 	return p.Flags.SYN && !p.Flags.ACK
 }
 
-func (a *ANNClassifier) Classify(p *Packet) bool {
-	return false
+type ThreatNetClassifier struct {
+	net *ThreatNet
+}
+
+func NewThreatNetClassifier(topology []int, threshold float64) *ThreatNetClassifier {
+	return &ThreatNetClassifier{
+		net: NewThreatNet(topology, threshold),
+	}
+}
+
+func (tnc *ThreatNetClassifier) Classify(p *Packet) bool {
+	// Normalize the input.
+	input := packetToInputVector(p)
+
+	// Feed-forward the network.
+	output := tnc.net.forward(input)
+
+	// Compare the result to the threshold
+	return output >= tnc.net.threshold
 }
