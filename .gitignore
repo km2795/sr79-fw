@@ -11,3 +11,6 @@ main
 # System Files
 .DS_Store
 Thumbs.db
+
+# Training Date
+/cmd
