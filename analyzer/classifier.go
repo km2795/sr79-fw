@@ -1,5 +1,7 @@
 package analyzer
 
+import "sync"
+
 // Packet is the representation of a unit piece of network data.
 type Packet struct {
 	SrcIp      string  // Source IP Address
@@ -36,10 +38,18 @@ func (r *RuleClassifier) Classify(p *Packet) bool {
 
 type ThreatNetClassifier struct {
 	net *ThreatNet
+	mu  sync.RWMutex
 }
 
 func (tnc *ThreatNetClassifier) InitializeThreatNet(weightsPath string) {
 	tnc.net.LoadWeights(weightsPath)
+}
+
+func (tnc *ThreatNetClassifier) ReloadWeights(path string) {
+	tnc.mu.Lock()
+	defer tnc.mu.Unlock()
+
+	tnc.net.LoadWeights(path)
 }
 
 func NewThreatNetClassifier(topology []int, threshold float64) *ThreatNetClassifier {
@@ -49,6 +59,9 @@ func NewThreatNetClassifier(topology []int, threshold float64) *ThreatNetClassif
 }
 
 func (tnc *ThreatNetClassifier) Classify(p *Packet) bool {
+	tnc.mu.RLock()
+	defer tnc.mu.RUnlock()
+
 	// Normalize the input.
 	input := packetToInputVector(p)
 
