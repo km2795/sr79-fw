@@ -13,4 +13,7 @@ main
 Thumbs.db
 
 # Training Date
-/cmd
+/cmd/train/data
+
+# Excluding this for now.
+weights.json
