@@ -1,0 +1,11 @@
+{
+  "device_interface": "eth0",
+  "weights_path": "./weights.json",
+  "topology": [
+    10,
+    80,
+    20,
+    1
+  ],
+  "threshold": 0.5
+}

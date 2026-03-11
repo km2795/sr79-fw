@@ -17,3 +17,9 @@ Thumbs.db
 
 # Excluding this for now.
 weights.json
+
+# Configurations
+config.json
+
+# Log files.
+*.log
