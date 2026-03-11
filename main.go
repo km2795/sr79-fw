@@ -6,29 +6,27 @@ import (
 	"os"
 	"os/signal"
 	"sr79-fw/analyzer"
+	"sr79-fw/config"
 	"sr79-fw/responder"
 	"sr79-fw/sniffer"
 	"syscall"
 )
 
 func main() {
-	// ---- HANDLING USER INPUT ---- //
+	// Load configurations from file.
+	config, err := config.Load("config.json")
+	if err != nil {
+		fmt.Printf("Error loading configurations: %v. Exiting...\n", err)
+		return
+	}
 
-	fmt.Println("Please Enter Network Interface Configuration: (eth0, wlp2s0, ...)")
-
-	// Device Interface Configuration.
-	var deviceInterface string
-
-	// Accept user input for the dev interface configuration.
-	fmt.Scan(&deviceInterface)
-
-	if len(deviceInterface) < 1 {
+	if len(config.DeviceInterface) < 1 {
 		fmt.Println("No Device Interface Configuration Entered. Exiting...")
 		return
 	}
 
 	// ---- INITIATE SNIFFER. ---- //
-	packetSource, err := sniffer.Start(deviceInterface)
+	packetSource, err := sniffer.Start(config.DeviceInterface)
 	if err != nil {
 		fmt.Printf("Error Initiating Sniffer: %v. Exiting...", err)
 		return
@@ -36,6 +34,10 @@ func main() {
 
 	// ---- LOAD CLASSIFIER (RULE BASED CLASSIFIER) ---- //
 	c := analyzer.RuleClassifier{}
+
+	// ---- LOAD THREAT NET (ANN BASED CLASSIFIER) ---- //
+	tnc := analyzer.NewThreatNetClassifier(config.Topology, config.Threshold)
+	tnc.InitializeThreatNet(config.WeightsPath)
 
 	// ---- PACKET RECEIVING CHANNEL LOOP ---- //
 	packetChannel := sniffer.ProcessPackets(packetSource)
@@ -56,6 +58,11 @@ func main() {
 	// Loop over the gopacket.Packet channel and invoke Analyze() on the packet.
 	for packet := range packetChannel {
 		verdict := analyzer.Analyze(&c, tracker, packet)
+
+		// If the Rule based classifier does not detect anomaly, let the packet pass through ThreatNet.
+		if verdict == analyzer.Allow {
+			verdict = analyzer.Analyze(tnc, tracker, packet)
+		}
 
 		// Drop
 		if verdict == analyzer.Drop {

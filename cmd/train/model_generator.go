@@ -6,11 +6,19 @@ import (
 	"os"
 	"path/filepath"
 	"sr79-fw/analyzer"
+	"sr79-fw/config"
 	"strconv"
 	"strings"
 )
 
 func main() {
+	// Load configurations from file.
+	config, er := config.Load("config.json")
+	if er != nil {
+		fmt.Printf("Error loading configurations: %v. Exiting...\n", er)
+		return
+	}
+
 	var completeTrainingVector [][]float64
 
 	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
@@ -36,7 +44,7 @@ func main() {
 	fmt.Println("\\ ---- Training ThreatNet! ---- \\")
 	lastProgress := 0
 	trainingLength := len(completeTrainingVector)
-	net := analyzer.NewThreatNet([]int{10, 100, 50, 1}, 0.7)
+	net := analyzer.NewThreatNet(config.Topology, config.Threshold)
 
 	for index, vector := range completeTrainingVector {
 		currentProgress := int((float64(index) / float64(trainingLength)) * 100)
