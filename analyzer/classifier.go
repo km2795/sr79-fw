@@ -38,6 +38,10 @@ type ThreatNetClassifier struct {
 	net *ThreatNet
 }
 
+func (tnc *ThreatNetClassifier) InitializeThreatNet(weightsPath string) {
+	tnc.net.LoadWeights(weightsPath)
+}
+
 func NewThreatNetClassifier(topology []int, threshold float64) *ThreatNetClassifier {
 	return &ThreatNetClassifier{
 		net: NewThreatNet(topology, threshold),
