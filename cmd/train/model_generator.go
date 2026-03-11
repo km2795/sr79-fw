@@ -34,9 +34,16 @@ func main() {
 	fmt.Printf("Total Training Vectors Loaded: %d\n", len(completeTrainingVector))
 
 	fmt.Println("\\ ---- Training ThreatNet! ---- \\")
-	net := analyzer.NewThreatNet([]int{10, 16, 8, 1}, 0.5)
+	lastProgress := 0
+	trainingLength := len(completeTrainingVector)
+	net := analyzer.NewThreatNet([]int{10, 100, 50, 1}, 0.7)
 
-	for _, vector := range completeTrainingVector {
+	for index, vector := range completeTrainingVector {
+		currentProgress := int((float64(index) / float64(trainingLength)) * 100)
+		if currentProgress%10 == 0 && currentProgress != lastProgress {
+			lastProgress = currentProgress
+			fmt.Printf("Training Progress: %d\n", lastProgress)
+		}
 		net.Train(vector[0:10], vector[10])
 	}
 	fmt.Printf("Training Complete. Saving Training Configurations\n")
