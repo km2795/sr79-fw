@@ -53,6 +53,17 @@ func main() {
 		os.Exit(0)
 	}()
 
+	// ---- UPDATE WEIGHTS USER SIGNAL ---- //
+	updateWeightsChan := make(chan os.Signal, 1)
+	signal.Notify(updateWeightsChan, syscall.SIGUSR1)
+
+	go func() {
+		<-updateWeightsChan
+		fmt.Printf("\n\nUpdating Model...\n\n")
+		tnc.ReloadWeights(config.WeightsPath)
+		log.Println("Model Successfully Updated.")
+	}()
+
 	tracker := analyzer.NewConnectionTracker(5.0)
 
 	// Loop over the gopacket.Packet channel and invoke Analyze() on the packet.
