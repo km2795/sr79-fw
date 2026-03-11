@@ -224,6 +224,11 @@ func (net *ThreatNet) train(input VectorFloat, target float64) {
 	}
 }
 
+// Wrapper for export.
+func (net *ThreatNet) Train(input VectorFloat, target float64) {
+	net.train(input, target)
+}
+
 // SaveWeights processes and saves the Neural Net configuration (weights)
 // to disk for re-use.
 func (net *ThreatNet) SaveWeights(path string) error {
