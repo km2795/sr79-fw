@@ -3,8 +3,9 @@
   "weights_path": "./weights.json",
   "topology": [
     10,
-    80,
-    20,
+    10,
+    5,
+    3,
     1
   ],
   "threshold": 0.5
