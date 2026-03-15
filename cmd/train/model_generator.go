@@ -13,7 +13,7 @@ import (
 
 func main() {
 	// Load configurations from file.
-	config, er := config.Load("config.json")
+	config, er := config.Load("../../config.json")
 	if er != nil {
 		fmt.Printf("Error loading configurations: %v. Exiting...\n", er)
 		return
