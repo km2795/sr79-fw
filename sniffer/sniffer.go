@@ -26,7 +26,7 @@ func Start(device string) (*PacketSource, error) {
 		return nil, fmt.Errorf("invalid device configuration")
 	}
 
-	handle, err := pcap.OpenLive(device, 1600, true, pcap.BlockForever)
+	handle, err := pcap.OpenLive(device, 65536, true, pcap.BlockForever)
 	if err != nil {
 		log.Printf("Error Opening Interface: %v\n", err)
 		return nil, err
