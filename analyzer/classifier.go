@@ -41,8 +41,8 @@ type ThreatNetClassifier struct {
 	mu  sync.RWMutex
 }
 
-func (tnc *ThreatNetClassifier) InitializeThreatNet(weightsPath string) {
-	tnc.net.LoadWeights(weightsPath)
+func (tnc *ThreatNetClassifier) InitializeThreatNet(weightsPath string) error {
+	return tnc.net.LoadWeights(weightsPath)
 }
 
 func (tnc *ThreatNetClassifier) ReloadWeights(path string) {
