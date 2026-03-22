@@ -20,16 +20,18 @@ type ThreatNet struct {
 
 	// weights: [Encapsulating Array][Neuron][Weights/Neuron]
 	// Representation: [ input --> hiddenLayer1: [ [a, b, c] [d, e, f] ], hiddenLayer1 --> hiddenLayer2: [ [a, b] [c, d] [e, f] ] hiddenLayer2 --> output: [ [a] [b] ] ]
-	weights   Layer // slice of weight matrices
-	threshold float64
+	weights      Layer // slice of weight matrices
+	threshold    float64
+	learningRate float64
 }
 
 // NewThreatNet is constructor for the ThreatNet. Accepts topology config
 // and user defined threshold
-func NewThreatNet(topology []int, threshold float64) *ThreatNet {
+func NewThreatNet(topology []int, threshold float64, learningRate float64) *ThreatNet {
 	net := &ThreatNet{
-		topology:  topology,
-		threshold: threshold,
+		topology:     topology,
+		threshold:    threshold,
+		learningRate: learningRate,
 	}
 
 	// Initialize the weights.
@@ -143,48 +145,50 @@ func (net *ThreatNet) forwardFull(input VectorFloat) Matrix {
 // train performs the feed-forwarding of the input using
 // forwardFull (storing the hidden layers, as well) and
 // backpropogating error.
-func (net *ThreatNet) train(input VectorFloat, target float64) {
-	// Step 1: forward pass, store all layer outputs
+func (net *ThreatNet) train(input VectorFloat, target float64) float64 {
 	allLayers := net.forwardFull(input)
 	last := len(allLayers) - 1
 
-	// Step 2: output layer error and delta
-	outputError := target - allLayers[last][0]
-	outputDelta := outputError * net.sigmoidPrime(allLayers[last][0])
+	// Compute loss from raw output
+	output := allLayers[last][0]
+	loss := -(target*math.Log(output+1e-9) + (1-target)*math.Log(1-output+1e-9))
 
-	// Step 3: update output layer weights (weights[last-1])
+	// Output delta
+	outputError := target - output
+	outputDelta := outputError * net.sigmoidPrime(output)
+
+	// Update output layer weights
 	for i := 0; i < len(allLayers[last-1]); i++ {
-		net.weights[last-1][i][0] += allLayers[last-1][i] * outputDelta
+		net.weights[last-1][i][0] += net.learningRate * allLayers[last-1][i] * outputDelta
 	}
 
-	// Step 4: propagate backwards through hidden layers
-	// currentDeltas starts as slice containing just outputDelta
+	// Backpropagate through hidden layers
 	currentDeltas := VectorFloat{outputDelta}
 
 	for l := last - 1; l >= 1; l-- {
 		nextDeltas := make(VectorFloat, len(allLayers[l]))
 
 		for i := 0; i < len(allLayers[l]); i++ {
-			// Sum up error from all neurons in the next layer
 			errSum := 0.0
 			for j := 0; j < len(currentDeltas); j++ {
 				errSum += currentDeltas[j] * net.weights[l][i][j]
 			}
 			nextDeltas[i] = errSum * net.sigmoidPrime(allLayers[l][i])
 
-			// Update weights for this layer
 			for j := 0; j < len(allLayers[l-1]); j++ {
-				net.weights[l-1][j][i] += allLayers[l-1][j] * nextDeltas[i]
+				net.weights[l-1][j][i] += net.learningRate * allLayers[l-1][j] * nextDeltas[i]
 			}
 		}
 
 		currentDeltas = nextDeltas
 	}
+
+	return loss
 }
 
 // Wrapper for export.
-func (net *ThreatNet) Train(input VectorFloat, target float64) {
-	net.train(input, target)
+func (net *ThreatNet) Train(input VectorFloat, target float64) float64 {
+	return net.train(input, target)
 }
 
 // SaveWeights processes and saves the Neural Net configuration (weights)
