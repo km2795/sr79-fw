@@ -42,7 +42,7 @@ func main() {
 	c := analyzer.RuleClassifier{}
 
 	// ---- LOAD THREAT NET (ANN BASED CLASSIFIER) ---- //
-	tnc := analyzer.NewThreatNetClassifier(config.Topology, config.Threshold)
+	tnc := analyzer.NewThreatNetClassifier(config.Topology, config.LearningRate, config.Threshold)
 	if err := tnc.InitializeThreatNet(config.WeightsPath); err != nil {
 		fmt.Printf("Failed to load weights: %v. Exiting...\n", err)
 		return

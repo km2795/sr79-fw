@@ -52,9 +52,9 @@ func (tnc *ThreatNetClassifier) ReloadWeights(path string) {
 	tnc.net.LoadWeights(path)
 }
 
-func NewThreatNetClassifier(topology []int, threshold float64) *ThreatNetClassifier {
+func NewThreatNetClassifier(topology []int, learningRate float64, threshold float64) *ThreatNetClassifier {
 	return &ThreatNetClassifier{
-		net: NewThreatNet(topology, threshold),
+		net: NewThreatNet(topology, learningRate, threshold),
 	}
 }
 
