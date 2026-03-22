@@ -42,18 +42,28 @@ func main() {
 	fmt.Printf("Total Training Vectors Loaded: %d\n", len(completeTrainingVector))
 
 	fmt.Println("\\ ---- Training ThreatNet! ---- \\")
-	lastProgress := 0
 	trainingLength := len(completeTrainingVector)
-	net := analyzer.NewThreatNet(config.Topology, config.Threshold)
+	net := analyzer.NewThreatNet(config.Topology, config.LearningRate, config.Threshold)
+	epochs := 20
 
-	for index, vector := range completeTrainingVector {
-		currentProgress := int((float64(index) / float64(trainingLength)) * 100)
-		if currentProgress%10 == 0 && currentProgress != lastProgress {
-			lastProgress = currentProgress
-			fmt.Printf("Training Progress: %d\n", lastProgress)
+	for epoch := 1; epoch <= epochs; epoch++ {
+		var totalLoss float64
+		lastProgress := 0
+
+		for index, vector := range completeTrainingVector {
+			currentProgress := int((float64(index) / float64(trainingLength)) * 100)
+			if currentProgress%10 == 0 && currentProgress != lastProgress {
+				lastProgress = currentProgress
+				fmt.Printf("Training Progress: %d\n", lastProgress)
+			}
+			loss := net.Train(vector[0:10], vector[10])
+			totalLoss += loss
 		}
-		net.Train(vector[0:10], vector[10])
+
+		avgLoss := totalLoss / float64(len(completeTrainingVector))
+		fmt.Printf("Epoch %d/%d - Avg Loss: %.6f\n", epoch, epochs, avgLoss)
 	}
+
 	fmt.Printf("Training Complete. Saving Training Configurations\n")
 	net.SaveWeights("../../weights.json")
 }
