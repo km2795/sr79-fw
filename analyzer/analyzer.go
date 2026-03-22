@@ -19,7 +19,7 @@ const (
 // convertPacket converts the gopacket.Packet implementation
 // of a network packet and converts that into our own 'Packet'
 // implementation.
-func convertPacket(gp gopacket.Packet) *Packet {
+func ConvertPacket(gp gopacket.Packet) *Packet {
 
 	packet := &Packet{}
 
@@ -83,13 +83,11 @@ func convertPacket(gp gopacket.Packet) *Packet {
 	return packet
 }
 
-func Analyze(c Classifier, tracker *ConnectionTracker, gp gopacket.Packet) Verdict {
-	// Convert the gopacket to our Packet implementation.
-	packet := convertPacket(gp)
+func Analyze(c Classifier, tracker *ConnectionTracker, packet *Packet) Verdict {
 
 	// If convertor could not convert the packet, for now, we
 	// may simply allow the packet to pass through, as the
-	// our convertor may not be sophisticated enough at this point.
+	// convertor may not be sophisticated enough at this point.
 	// NOT Logging Allowed packets here due to probable lack of
 	// fields to populate while logging.
 	if packet == nil {
