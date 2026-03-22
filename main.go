@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"sr79-fw/analyzer"
@@ -17,15 +16,15 @@ import (
 
 func main() {
 
-	// Initialize the logger.
-	logger.StartLogger()
-
 	// Load configurations from file.
 	config, err := config.Load("config.json")
 	if err != nil {
 		fmt.Printf("Error loading configurations: %v. Exiting...\n", err)
 		return
 	}
+
+	// Initialize the logger.
+	logger.StartLogger()
 
 	if len(config.DeviceInterface) < 1 {
 		fmt.Println("No Device Interface Configuration Entered. Exiting...")
@@ -44,7 +43,10 @@ func main() {
 
 	// ---- LOAD THREAT NET (ANN BASED CLASSIFIER) ---- //
 	tnc := analyzer.NewThreatNetClassifier(config.Topology, config.Threshold)
-	tnc.InitializeThreatNet(config.WeightsPath)
+	if err := tnc.InitializeThreatNet(config.WeightsPath); err != nil {
+		fmt.Printf("Failed to load weights: %v. Exiting...\n", err)
+		return
+	}
 
 	// ---- PACKET RECEIVING CHANNEL LOOP ---- //
 	packetChannel := sniffer.ProcessPackets(packetSource)
@@ -53,14 +55,10 @@ func main() {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	// To flush the last entries before closing the logger.
-	done := make(chan struct{})
-
 	go func() {
 		<-sigChan
 		fmt.Println("\nShutting down sr79-fw")
 		packetSource.Close()
-		close(done)
 	}()
 
 	// ---- UPDATE WEIGHTS USER SIGNAL ---- //
@@ -69,9 +67,19 @@ func main() {
 
 	go func() {
 		for range updateWeightsChan {
-			fmt.Printf("\n\nUpdating Model...\n\n")
+			logger.Log(logger.LogEntry{
+				LogCategory: logger.LogTypeSystem,
+				Timestamp:   time.Now(),
+				Level:       logger.INFO,
+				LogText:     "Updating Model...",
+			})
 			tnc.ReloadWeights(config.WeightsPath)
-			log.Println("Model Successfully Updated.")
+			logger.Log(logger.LogEntry{
+				LogCategory: logger.LogTypeSystem,
+				Timestamp:   time.Now(),
+				Level:       logger.INFO,
+				LogText:     "Model Successfully Updated.",
+			})
 		}
 	}()
 
@@ -109,6 +117,6 @@ func main() {
 		statistics.UpdateStatistics(stats, rawSize, verdict == analyzer.Allow)
 	}
 
-	// End.
-	<-done
+	// Close the logger.
+	logger.StopLogger()
 }
