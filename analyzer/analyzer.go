@@ -129,7 +129,6 @@ func Analyze(c Classifier, tracker *ConnectionTracker, packet *Packet) Verdict {
 	// For all other cases, allow the packet through.
 	logEntry.Level = logger.INFO
 	logEntry.Verdict = "ALLOW"
-	logger.Log(logEntry)
 
 	return Allow
 }
