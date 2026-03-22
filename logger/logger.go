@@ -50,11 +50,10 @@ func StartLogger() {
 	go func() {
 		for entry := range logChan {
 			if entry.LogCategory == LogTypeSystem {
-				globalLogger.Printf("[%s] [%s] %s | VERDICT: [%s]",
+				globalLogger.Printf("[%s] [%s] %s",
 					entry.Timestamp.Format("02-01-2006 15:04:05"),
 					entry.Level,
-					entry.LogText,
-					entry.Verdict)
+					entry.LogText)
 			} else {
 				globalLogger.Printf("[%s] [%s] [%s] [%s -> %s] FLAGS: %s RATE: %.2f | VERDICT: %s\n",
 					entry.Timestamp.Format("02-01-2006 15:04:05"),
