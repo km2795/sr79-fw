@@ -67,19 +67,9 @@ func main() {
 
 	go func() {
 		for range updateWeightsChan {
-			logger.Log(logger.LogEntry{
-				LogCategory: logger.LogTypeSystem,
-				Timestamp:   time.Now(),
-				Level:       logger.INFO,
-				LogText:     "Updating Model...",
-			})
+			logger.LogSystem(logger.INFO, "Updating Model...")
 			tnc.ReloadWeights(config.WeightsPath)
-			logger.Log(logger.LogEntry{
-				LogCategory: logger.LogTypeSystem,
-				Timestamp:   time.Now(),
-				Level:       logger.INFO,
-				LogText:     "Model Successfully Updated.",
-			})
+			logger.LogSystem(logger.INFO, "Model Successfully Updated.")
 		}
 	}()
 
@@ -104,13 +94,7 @@ func main() {
 		// Drop
 		if verdict == analyzer.Drop {
 			if err := responder.SendReset(packetSource.Handle(), packet); err != nil {
-				logger.Log(logger.LogEntry{
-					LogCategory: logger.LogTypeSystem,
-					Timestamp:   time.Now(),
-					Level:       logger.ALERT,
-					Verdict:     "DROP",
-					LogText:     fmt.Sprintf("RST injection failed: %v", err),
-				})
+				logger.LogSystem(logger.ALERT, fmt.Sprintf("RST injection failed: %v", err))
 			}
 		}
 

@@ -73,15 +73,27 @@ func StartLogger() {
 	}()
 }
 
+// Log is used for mostly packet log. (Accept or drop)
 func Log(entry LogEntry) {
 	if globalLogger == nil {
 		return
 	}
+
 	select {
 	case logChan <- entry:
 	default:
 		fmt.Fprintf(os.Stderr, "WARN: log channel full, dropping entry\n")
 	}
+}
+
+// LogSystem is used for non-recurring or non-packet info/log.
+func LogSystem(level LogLevel, logText string) {
+	Log(LogEntry{
+		LogCategory: LogTypeSystem,
+		Timestamp:   time.Now(),
+		Level:       level,
+		LogText:     logText,
+	})
 }
 
 func StopLogger() {
