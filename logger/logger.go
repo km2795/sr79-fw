@@ -2,23 +2,30 @@ package logger
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"time"
 )
 
 type LogLevel string
+type LogType int
 
+// Log levels.
 const (
 	LOG   LogLevel = "LOG"
 	INFO  LogLevel = "INFO"
 	ALERT LogLevel = "ALERT"
 )
 
+// Log Type.
+const (
+	LogTypePacket LogType = 0 // Recurring packet log.
+	LogTypeSystem LogType = 1 // Ad-Hoc log. (non-recurring)
+)
+
 type LogEntry struct {
-	LogType     byte   // 0 for recurrent log; 1 for non-recurrent log.
-	LogText     string // non-recurrent log text.
+	LogCategory LogType // 0 for recurrent log; 1 for non-recurrent log.
+	LogText     string  // non-recurrent log text.
 	Timestamp   time.Time
 	Level       LogLevel
 	Classifier  string
@@ -32,22 +39,17 @@ type LogEntry struct {
 var logChan = make(chan LogEntry, 1000)
 var globalLogger *log.Logger
 
-func StartLogger(toFile bool) {
-	var writer io.Writer = os.Stdout
-
-	if toFile {
-		logFile, err := os.OpenFile("classifier.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			log.Fatalf("Failed to open log file: %v", err)
-		}
-		writer = io.MultiWriter(logFile)
+func StartLogger() {
+	logFile, err := os.OpenFile("classifier.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatalf("Failed to open log file: %v", err)
 	}
 
-	globalLogger = log.New(writer, "", 0)
+	globalLogger = log.New(logFile, "", 0)
 
 	go func() {
 		for entry := range logChan {
-			if entry.LogType == 1 {
+			if entry.LogCategory == LogTypeSystem {
 				globalLogger.Printf("[%s] [%s] %s | VERDICT: [%s]",
 					entry.Timestamp.Format("02-01-2006 15:04:05"),
 					entry.Level,

@@ -18,7 +18,7 @@ import (
 func main() {
 
 	// Initialize the logger.
-	logger.StartLogger(true)
+	logger.StartLogger()
 
 	// Load configurations from file.
 	config, err := config.Load("config.json")
@@ -97,11 +97,11 @@ func main() {
 		if verdict == analyzer.Drop {
 			if err := responder.SendReset(packetSource.Handle(), packet); err != nil {
 				logger.Log(logger.LogEntry{
-					LogType:   1,
-					Timestamp: time.Now(),
-					Level:     logger.ALERT,
-					Verdict:   "DROP",
-					LogText:   fmt.Sprintf("RST injection failed: %v", err),
+					LogCategory: logger.LogTypeSystem,
+					Timestamp:   time.Now(),
+					Level:       logger.ALERT,
+					Verdict:     "DROP",
+					LogText:     fmt.Sprintf("RST injection failed: %v", err),
 				})
 			}
 		}

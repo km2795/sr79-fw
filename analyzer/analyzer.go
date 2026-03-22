@@ -105,7 +105,7 @@ func Analyze(c Classifier, tracker *ConnectionTracker, packet *Packet) Verdict {
 
 	// Create Logger Entry for pre-determined fields.
 	var logEntry logger.LogEntry = logger.LogEntry{
-		LogType:     0, // Recurring log.
+		LogCategory: logger.LogTypePacket, // Recurring log.
 		Timestamp:   time.Now(),
 		Classifier:  fmt.Sprintf("%T", c),
 		Source:      fmt.Sprintf("%s:%d", packet.SrcIp, packet.SrcPort),
