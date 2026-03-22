@@ -13,48 +13,6 @@ type VectorFloat []float64
 type Matrix [][]float64
 type Layer [][][]float64
 
-// dot performs the dot matrix of two matrices 'a' and 'b' and
-// and modified the 'a' (caller) in place.
-func (a *Matrix) dot(b *Matrix) {
-	rowA := len(*a)      // Rows of the resulting matrix.
-	colA := len((*a)[0]) //
-	colB := len((*b)[0]) // Columns of the resulting matrix.
-
-	finalMatrix := make(Matrix, rowA) // for each row of new matrix.
-	for i := range finalMatrix {
-		finalMatrix[i] = make(VectorFloat, colB)
-		for j := 0; j < colB; j++ { // for each column of new matrix.
-			for k := 0; k < colA; k++ { // Number of elements to multiply on each round.
-				finalMatrix[i][j] += (*a)[i][k] * (*b)[k][j]
-			}
-		}
-	}
-
-	// mutate the original (caller) matrix.
-	*a = finalMatrix
-}
-
-func (m *Matrix) transpose() *Matrix {
-	rows := len(*(m))
-	columns := len((*m)[0])
-
-	// Initialize the new Matrix in transposed configuration.
-	result := make(Matrix, columns)
-	// This is important, here!! This ensures the matrix is
-	// properly configured.
-	for j := 0; j < columns; j++ {
-		result[j] = make(VectorFloat, rows)
-	}
-
-	for i := 0; i < rows; i++ {
-		for j := 0; j < columns; j++ {
-			result[j][i] = (*m)[i][j]
-		}
-	}
-
-	return &result
-}
-
 // ThreatNet structure.
 type ThreatNet struct {
 	// e.g., Topology: [2, 3, 2, 1]
