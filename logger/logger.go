@@ -17,6 +17,8 @@ const (
 )
 
 type LogEntry struct {
+	LogType     byte   // 0 for recurrent log; 1 for non-recurrent log.
+	LogText     string // non-recurrent log text.
 	Timestamp   time.Time
 	Level       LogLevel
 	Classifier  string
@@ -45,15 +47,23 @@ func StartLogger(toFile bool) {
 
 	go func() {
 		for entry := range logChan {
-			globalLogger.Printf("[%s] [%s] [%s] [%s -> %s] FLAGS: %s RATE: %.2f VERDICT: %s\n",
-				entry.Timestamp.Format("02-01-2006 15:04:05"),
-				entry.Level,
-				entry.Classifier,
-				entry.Source,
-				entry.Destination,
-				entry.TCPFlags,
-				entry.PacketRate,
-				entry.Verdict)
+			if entry.LogType == 1 {
+				globalLogger.Printf("[%s] [%s] %s | VERDICT: [%s]",
+					entry.Timestamp.Format("02-01-2006 15:04:05"),
+					entry.Level,
+					entry.LogText,
+					entry.Verdict)
+			} else {
+				globalLogger.Printf("[%s] [%s] [%s] [%s -> %s] FLAGS: %s RATE: %.2f | VERDICT: %s\n",
+					entry.Timestamp.Format("02-01-2006 15:04:05"),
+					entry.Level,
+					entry.Classifier,
+					entry.Source,
+					entry.Destination,
+					entry.TCPFlags,
+					entry.PacketRate,
+					entry.Verdict)
+			}
 		}
 	}()
 }
