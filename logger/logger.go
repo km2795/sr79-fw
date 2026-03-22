@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -37,6 +38,7 @@ type LogEntry struct {
 }
 
 var logChan = make(chan LogEntry, 1000)
+var wg sync.WaitGroup
 var globalLogger *log.Logger
 
 func StartLogger() {
@@ -47,7 +49,9 @@ func StartLogger() {
 
 	globalLogger = log.New(logFile, "", 0)
 
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		for entry := range logChan {
 			if entry.LogCategory == LogTypeSystem {
 				globalLogger.Printf("[%s] [%s] %s",
@@ -78,4 +82,9 @@ func Log(entry LogEntry) {
 	default:
 		fmt.Fprintf(os.Stderr, "WARN: log channel full, dropping entry\n")
 	}
+}
+
+func StopLogger() {
+	close(logChan)
+	wg.Wait()
 }
