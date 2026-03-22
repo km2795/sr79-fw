@@ -10,6 +10,7 @@ type Config struct {
 	WeightsPath     string  `json:"weights_path"`
 	Topology        []int   `json:"topology"`
 	Threshold       float64 `json:"threshold"`
+	LearningRate    float64 `json:"learning_rate"`
 }
 
 func Load(path string) (*Config, error) {
