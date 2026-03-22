@@ -33,7 +33,7 @@ func Start(device string) (*PacketSource, error) {
 	}
 
 	// BPF Filter for IP only traffic.
-	if err := handle.SetBPFFilter("ip"); err != nil {
+	if err := handle.SetBPFFilter("ip or ip6"); err != nil {
 		log.Printf("Unable to Set BPF Filter for IP only packets: %v\n", err)
 	}
 

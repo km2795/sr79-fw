@@ -23,11 +23,8 @@ func ConvertPacket(gp gopacket.Packet) *Packet {
 
 	packet := &Packet{}
 
-	// IPV4 Layer.
 	ipv4Layer := gp.Layer(layers.LayerTypeIPv4)
-	if ipv4Layer == nil {
-		return nil
-	}
+	ipv6Layer := gp.Layer(layers.LayerTypeIPv6)
 
 	// TCP Layer.
 	tcpLayer := gp.Layer(layers.LayerTypeTCP)
@@ -41,17 +38,29 @@ func ConvertPacket(gp gopacket.Packet) *Packet {
 		packet.Payload = applicationLayer.Payload()
 	}
 
-	// ---- Assert IPV4, TCP, UDP Layers and populate ----
+	// ---- Assert IPV6, IPV4, TCP, UDP Layers and populate ----
 	// ---- 'packet' with relevant fields on true. -------
 
-	ipv4, ok := ipv4Layer.(*layers.IPv4)
-	if ok {
+	if ipv4Layer != nil {
+		ipv4, ok := ipv4Layer.(*layers.IPv4)
+		if !ok {
+			return nil
+		}
 		packet.SrcIp = ipv4.SrcIP.String()
 		packet.DestIp = ipv4.DstIP.String()
 		packet.Protocol = ipv4.Protocol.String()
 		packet.Size = int(ipv4.Length)
+	} else if ipv6Layer != nil {
+		ipv6, ok := ipv6Layer.(*layers.IPv6)
+		if !ok {
+			return nil
+		}
+		packet.SrcIp = ipv6.SrcIP.String()
+		packet.DestIp = ipv6.DstIP.String()
+		packet.Protocol = ipv6.NextHeader.String()
+		packet.Size = int(ipv6.Length)
 	} else {
-		return nil
+		return nil // neither IPv4 nor IPv6
 	}
 
 	if packet.Protocol == "TCP" {
