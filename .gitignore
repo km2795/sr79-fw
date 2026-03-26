@@ -1,6 +1,7 @@
 # Binaries
 ips
 sr79-fw
+!sr79-fw/
 *.exe
 main
 
