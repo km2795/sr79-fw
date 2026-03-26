@@ -26,8 +26,17 @@ A self-sufficient IPS leveraging the power of machine learning creating a chokep
 ### 3. Setup configuration. 
 >cp config.example.json config.json
 
-### 4. Build the binary
-> go build -o sr79-fw main.go
+### 4. Go the main build directory
+> cd sr79-fw/
 
-### 5. Run the IPS (you'd need elevated privileges to bind with the pcap library)
->sudo ./sr79-fw
+### 5. Build the binary
+> go build ./...
+
+### 6. Go to the parent directory.
+> cd ../
+
+### 7. Run the IPS (you'd need elevated privileges to bind with the pcap library)
+> sudo ./sr79-fw/sr79-fw
+
+### 8. To update the weights of the ThreatNet without closing the IPS. Open another terminal and send USER SIGNAL (USR1)
+> sudo kill -USR1 $(pgrep sr79-fw)
