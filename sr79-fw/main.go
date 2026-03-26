@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"os/signal"
 	"sr79-fw/analyzer"
 	"sr79-fw/config"
 	"sr79-fw/logger"
@@ -11,7 +9,6 @@ import (
 	"sr79-fw/sniffer"
 	"sr79-fw/statistics"
 	"sr79-fw/statserver"
-	"syscall"
 	"time"
 )
 
@@ -49,30 +46,11 @@ func main() {
 		return
 	}
 
+	// Setup signal.
+	SetupSignals(config.WeightsPath, tnc, packetSource)
+
 	// ---- PACKET RECEIVING CHANNEL LOOP ---- //
 	packetChannel := sniffer.ProcessPackets(packetSource)
-
-	// ---- GRACEFUL SHUTDOWN MECHANISM ---- //
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		<-sigChan
-		fmt.Println("\nShutting down sr79-fw")
-		packetSource.Close()
-	}()
-
-	// ---- UPDATE WEIGHTS USER SIGNAL ---- //
-	updateWeightsChan := make(chan os.Signal, 1)
-	signal.Notify(updateWeightsChan, syscall.SIGUSR1)
-
-	go func() {
-		for range updateWeightsChan {
-			logger.LogSystem(logger.INFO, "Updating Model...")
-			tnc.ReloadWeights(config.WeightsPath)
-			logger.LogSystem(logger.INFO, "Model Successfully Updated.")
-		}
-	}()
 
 	// Initialize the Statistics.
 	stats := &statistics.Statistics{StartTime: time.Now()}
@@ -83,6 +61,7 @@ func main() {
 	// Start the Statistics Server.
 	statserver.StartStatServer(stats)
 
+	// Initialize Connection tracker.
 	tracker := analyzer.NewConnectionTracker(5.0)
 
 	// Loop over the gopacket.Packet channel and invoke Analyze() on the packet.
