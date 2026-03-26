@@ -10,6 +10,7 @@ import (
 	"sr79-fw/responder"
 	"sr79-fw/sniffer"
 	"sr79-fw/statistics"
+	"sr79-fw/statserver"
 	"syscall"
 	"time"
 )
@@ -73,8 +74,14 @@ func main() {
 		}
 	}()
 
+	// Initialize the Statistics.
 	stats := &statistics.Statistics{StartTime: time.Now()}
+
+	// Stats for Terminal output.
 	statistics.StartUIRenderEngine(stats)
+
+	// Start the Statistics Server.
+	statserver.StartStatServer(stats)
 
 	tracker := analyzer.NewConnectionTracker(5.0)
 
