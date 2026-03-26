@@ -16,6 +16,20 @@ type Statistics struct {
 	mu               sync.Mutex
 }
 
+// Snapshot returns a safe copy of the current statistics.
+func (s *Statistics) Snapshot() Statistics {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	return Statistics{
+		StartTime:        s.StartTime,
+		PacketsProcessed: s.PacketsProcessed,
+		PacketsDropped:   s.PacketsDropped,
+		Size:             s.Size,
+		Throughput:       s.Throughput,
+	}
+}
+
 // Initiate the Stats rendering goroutine.
 // Updates after 1 second interval.
 func StartUIRenderEngine(stats *Statistics) {
