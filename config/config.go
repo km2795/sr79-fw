@@ -11,6 +11,7 @@ type Config struct {
 	Topology        []int   `json:"topology"`
 	Threshold       float64 `json:"threshold"`
 	LearningRate    float64 `json:"learning_rate"`
+	WebAppUrl       string  `json:"web_app_url"`
 }
 
 func Load(path string) (*Config, error) {
